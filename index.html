@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Productivity Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Toast container -->
+<div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+<!-- Confirm modal -->
+<div id="confirm-modal" class="modal-overlay hidden">
+  <div class="modal glass">
+    <i class="fa-solid fa-triangle-exclamation modal-icon"></i>
+    <h3 id="confirm-title">Are you sure?</h3>
+    <p id="confirm-body">This action cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="confirm-cancel">Cancel</button>
+      <button class="btn btn-danger" id="confirm-ok">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark"><i class="fa-solid fa-hexagon-nodes"></i></div>
+      <span class="brand-name">Zenith</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-view="dashboard">
+        <i class="fa-solid fa-grid-2"></i><span>Dashboard</span>
+      </button>
+      <button class="nav-item" data-view="todo">
+        <i class="fa-solid fa-list-check"></i><span>Todo</span>
+      </button>
+      <button class="nav-item" data-view="planner">
+        <i class="fa-solid fa-calendar-days"></i><span>Day Planner</span>
+      </button>
+      <button class="nav-item" data-view="pomodoro">
+        <i class="fa-solid fa-stopwatch"></i><span>Pomodoro</span>
+      </button>
+      <button class="nav-item" data-view="working">
+        <i class="fa-solid fa-layer-group"></i><span>Working List</span>
+      </button>
+      <button class="nav-item" data-view="progress">
+        <i class="fa-solid fa-chart-simple"></i><span>Progress</span>
+      </button>
+      <button class="nav-item" data-view="settings">
+        <i class="fa-solid fa-gear"></i><span>Settings</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="streak-pill">
+        <i class="fa-solid fa-fire"></i>
+        <span id="sidebar-streak">0</span> day streak
+      </div>
+    </div>
+  </aside>
+
+  <!-- MOBILE BOTTOM NAV -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="bn-item active" data-view="dashboard"><i class="fa-solid fa-grid-2"></i></button>
+    <button class="bn-item" data-view="todo"><i class="fa-solid fa-list-check"></i></button>
+    <button class="bn-item" data-view="planner"><i class="fa-solid fa-calendar-days"></i></button>
+    <button class="bn-item" data-view="pomodoro"><i class="fa-solid fa-stopwatch"></i></button>
+    <button class="bn-item" data-view="working"><i class="fa-solid fa-layer-group"></i></button>
+    <button class="bn-item" data-view="progress"><i class="fa-solid fa-chart-simple"></i></button>
+    <button class="bn-item" data-view="settings"><i class="fa-solid fa-gear"></i></button>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- HEADER -->
+    <header class="topbar">
+      <button class="icon-btn sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+
+      <div class="greeting-block">
+        <h1 id="greeting-text">Good evening, Developer</h1>
+        <p class="greeting-sub"><span id="header-date"></span> · <span id="header-time">00:00:00</span></p>
+      </div>
+
+      <div class="topbar-right">
+        <div class="weather-chip glass" id="weather-chip">
+          <i class="fa-solid fa-cloud-sun"></i>
+          <span id="weather-text">Weather unavailable</span>
+        </div>
+        <div class="avatar" title="Your profile">
+          <i class="fa-solid fa-user-astronaut"></i>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============ VIEW: DASHBOARD ============ -->
+    <section class="view active" id="view-dashboard">
+
+      <div class="stats-grid">
+        <div class="stat-card glass">
+          <div class="stat-icon icon-violet"><i class="fa-solid fa-list-check"></i></div>
+          <div class="stat-meta"><span class="stat-value" id="stat-today-tasks">0</span><span class="stat-label">Today's Tasks</span></div>
+        </div>
+        <div class="stat-card glass">
+          <div class="stat-icon icon-teal"><i class="fa-solid fa-circle-check"></i></div>
+          <div class="stat-meta"><span class="stat-value" id="stat-completed-tasks">0</span><span class="stat-label">Completed</span></div>
+        </div>
+        <div class="stat-card glass">
+          <div class="stat-icon icon-amber"><i class="fa-solid fa-stopwatch"></i></div>
+          <div class="stat-meta"><span class="stat-value" id="stat-pomodoros">0</span><span class="stat-label">Pomodoro Sessions</span></div>
+        </div>
+        <div class="stat-card glass">
+          <div class="stat-icon icon-coral"><i class="fa-solid fa-chart-line"></i></div>
+          <div class="stat-meta"><span class="stat-value" id="stat-productivity">0%</span><span class="stat-label">Productivity</span></div>
+        </div>
+        <div class="stat-card glass">
+          <div class="stat-icon icon-violet"><i class="fa-solid fa-fire"></i></div>
+          <div class="stat-meta"><span class="stat-value" id="stat-streak">0</span><span class="stat-label">Current Streak</span></div>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <!-- Motivation -->
+        <div class="card glass motivation-card">
+          <div class="card-head">
+            <h3><i class="fa-solid fa-quote-left"></i> Daily Motivation</h3>
+            <button class="icon-btn" id="refresh-quote" title="New quote"><i class="fa-solid fa-rotate"></i></button>
+          </div>
+          <blockquote id="quote-text">Loading today's quote…</blockquote>
+          <p class="quote-author" id="quote-author"></p>
+        </div>
+
+        <!-- Mini planner preview -->
+        <div class="card glass">
+          <div class="card-head"><h3><i class="fa-solid fa-calendar-days"></i> Up Next</h3></div>
+          <div id="planner-preview" class="planner-preview"></div>
+        </div>
+
+        <!-- Productivity chart -->
+        <div class="card glass span-2">
+          <div class="card-head"><h3><i class="fa-solid fa-chart-column"></i> Last 7 Days</h3></div>
+          <canvas id="productivity-chart" height="110"></canvas>
+        </div>
+
+        <!-- Heatmap -->
+        <div class="card glass span-2">
+          <div class="card-head">
+            <h3><i class="fa-solid fa-fire"></i> Activity</h3>
+            <div class="heatmap-stats">
+              <span><strong id="heat-current">0</strong> current</span>
+              <span><strong id="heat-longest">0</strong> longest</span>
+              <span><strong id="heat-total">0</strong> total days</span>
+            </div>
+          </div>
+          <div id="heatmap" class="heatmap"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ VIEW: TODO ============ -->
+    <section class="view" id="view-todo">
+      <div class="view-header">
+        <h2>Todo List</h2>
+        <button class="btn btn-primary" id="open-add-task"><i class="fa-solid fa-plus"></i> Add Task</button>
+      </div>
+
+      <div class="toolbar glass">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="task-search" placeholder="Search tasks…">
+        </div>
+        <div class="filter-group">
+          <select id="filter-category">
+            <option value="all">All Categories</option>
+            <option value="Work">Work</option>
+            <option value="Study">Study</option>
+            <option value="Coding">Coding</option>
+            <option value="Personal">Personal</option>
+            <option value="Other">Other</option>
+          </select>
+          <select id="filter-priority">
+            <option value="all">All Priorities</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+          <select id="filter-status">
+            <option value="all">All Tasks</option>
+            <option value="active">Active</option>
+            <option value="completed">Completed</option>
+            <option value="important">Important</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="task-list" class="task-list"></div>
+      <div id="task-empty" class="empty-state hidden">
+        <i class="fa-solid fa-clipboard-list"></i>
+        <p>No tasks match here. Add one to get moving.</p>
+      </div>
+    </section>
+
+    <!-- Add/Edit Task Modal -->
+    <div class="modal-overlay hidden" id="task-modal">
+      <form class="modal glass" id="task-form">
+        <h3 id="task-modal-title">Add Task</h3>
+        <input type="hidden" id="task-id">
+        <label>Title
+          <input type="text" id="task-title" required placeholder="e.g. Finish DSA assignment">
+        </label>
+        <div class="form-row">
+          <label>Category
+            <select id="task-category">
+              <option>Work</option><option>Study</option><option>Coding</option><option>Personal</option><option>Other</option>
+            </select>
+          </label>
+          <label>Priority
+            <select id="task-priority">
+              <option>Low</option><option selected>Medium</option><option>High</option>
+            </select>
+          </label>
+        </div>
+        <label>Due Time
+          <input type="time" id="task-due">
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="task-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Task</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ============ VIEW: PLANNER ============ -->
+    <section class="view" id="view-planner">
+      <div class="view-header">
+        <h2>Day Planner</h2>
+        <span class="muted" id="planner-date-label"></span>
+      </div>
+      <div id="planner-list" class="planner-list"></div>
+    </section>
+
+    <div class="modal-overlay hidden" id="planner-modal">
+      <form class="modal glass" id="planner-form">
+        <h3 id="planner-modal-title">Add Activity</h3>
+        <input type="hidden" id="planner-slot">
+        <label>Activity
+          <input type="text" id="planner-activity" required placeholder="e.g. Backend Lecture">
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="planner-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ============ VIEW: POMODORO ============ -->
+    <section class="view" id="view-pomodoro">
+      <div class="pomo-wrap">
+        <div class="pomo-modes">
+          <button class="pomo-mode active" data-mode="work">Work</button>
+          <button class="pomo-mode" data-mode="short">Short Break</button>
+          <button class="pomo-mode" data-mode="long">Long Break</button>
+        </div>
+
+        <div class="pomo-ring-wrap">
+          <svg class="pomo-ring" viewBox="0 0 260 260">
+            <circle class="pomo-ring-bg" cx="130" cy="130" r="115"></circle>
+            <circle class="pomo-ring-fg" id="pomo-ring-fg" cx="130" cy="130" r="115"></circle>
+          </svg>
+          <div class="pomo-time-display">
+            <span id="pomo-time">25:00</span>
+            <span class="pomo-mode-label" id="pomo-mode-label">Focus Time</span>
+          </div>
+        </div>
+
+        <div class="pomo-controls">
+          <button class="btn btn-ghost" id="pomo-reset"><i class="fa-solid fa-rotate-left"></i></button>
+          <button class="btn btn-primary btn-lg" id="pomo-start"><i class="fa-solid fa-play"></i> Start</button>
+          <button class="btn btn-ghost" id="pomo-skip"><i class="fa-solid fa-forward"></i></button>
+        </div>
+
+        <div class="pomo-stats">
+          <div><strong id="pomo-today-count">0</strong><span>Sessions Today</span></div>
+          <div><strong id="pomo-until-long">4</strong><span>Until Long Break</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ VIEW: WORKING LIST ============ -->
+    <section class="view" id="view-working">
+      <div class="view-header">
+        <h2>Today's Working List</h2>
+        <button class="btn btn-primary" id="open-add-work"><i class="fa-solid fa-plus"></i> Add Item</button>
+      </div>
+
+      <div class="card glass overall-progress">
+        <div class="card-head"><h3>Overall Completion</h3><span id="work-overall-pct">0%</span></div>
+        <div class="progress-track"><div class="progress-fill" id="work-overall-fill"></div></div>
+      </div>
+
+      <div id="working-list" class="working-list"></div>
+      <div id="working-empty" class="empty-state hidden">
+        <i class="fa-solid fa-layer-group"></i>
+        <p>Nothing on today's working list yet.</p>
+      </div>
+    </section>
+
+    <div class="modal-overlay hidden" id="work-modal">
+      <form class="modal glass" id="work-form">
+        <h3>Add Working Item</h3>
+        <label>Task Name
+          <input type="text" id="work-name" required placeholder="e.g. Ship dashboard feature">
+        </label>
+        <label>Priority
+          <select id="work-priority">
+            <option>Low</option><option selected>Medium</option><option>High</option>
+          </select>
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="work-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ============ VIEW: PROGRESS ============ -->
+    <section class="view" id="view-progress">
+      <div class="view-header"><h2>Progress</h2></div>
+      <div class="dash-grid">
+        <div class="card glass span-2">
+          <div class="card-head"><h3>Productivity — Last 7 Days</h3></div>
+          <canvas id="progress-chart" height="120"></canvas>
+        </div>
+        <div class="card glass span-2">
+          <div class="card-head">
+            <h3>Activity Heatmap</h3>
+            <div class="heatmap-stats">
+              <span><strong id="heat-current-2">0</strong> current</span>
+              <span><strong id="heat-longest-2">0</strong> longest</span>
+              <span><strong id="heat-total-2">0</strong> total days</span>
+            </div>
+          </div>
+          <div id="heatmap-2" class="heatmap"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ VIEW: SETTINGS ============ -->
+    <section class="view" id="view-settings">
+      <div class="view-header"><h2>Settings</h2></div>
+      <div class="card glass settings-card">
+        <h3>Weather</h3>
+        <p class="muted">Set your city for the header weather chip. Requires an OpenWeatherMap API key configured in <code>script.js</code> (see the <code>CONFIG.WEATHER_API_KEY</code> variable).</p>
+        <div class="form-row">
+          <input type="text" id="settings-city" placeholder="e.g. Indore">
+          <button class="btn btn-primary" id="save-city">Save City</button>
+        </div>
+      </div>
+      <div class="card glass settings-card">
+        <h3>Data</h3>
+        <p class="muted">All your data lives only in this browser's local storage. Nothing is sent anywhere.</p>
+        <button class="btn btn-danger" id="clear-all-data"><i class="fa-solid fa-trash"></i> Clear All Data</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
