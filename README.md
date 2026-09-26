@@ -1,3 +1,9 @@
+# Zenith
+
+A modern dashboard built with HTML, CSS and Vanilla JavaScript.
+
+[🚀 Live Demo](https://zenith-sigma-ten.vercel.app)
+
 # Productivity Dashboard
 
 A dark, glassmorphic productivity dashboard built with plain **HTML, CSS, and vanilla JavaScript** — no frameworks, no build step. Open `index.html` in a browser and it works.
